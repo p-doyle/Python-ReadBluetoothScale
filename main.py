@@ -75,7 +75,8 @@ class BLEDelegate(DefaultDelegate):
     def handleDiscovery(self, dev, is_new_dev, is_new_data):
 
         # if the newly discovered device is the scale
-        if is_new_dev and dev.addr == SCALE_ADDRESS:
+        # dev.addr is lowercase so make sure the SCALE_ADDRESS is as well
+        if is_new_dev and dev.addr == SCALE_ADDRESS.lower():
 
             # make sure the read weight thread isn't already running
             # the MEASUREMENT_COOLDOWN should prevent this from happening but just to be sure...
