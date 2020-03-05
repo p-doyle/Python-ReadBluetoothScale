@@ -91,7 +91,7 @@ class BLEDelegate(DefaultDelegate):
         # the weight notification starts with \x10
         if data[0] == 16:
 
-            # convert the 4th and 5th hex bytes to decimal and then divide by 100
+            # convert the 4th and 5th bytes to decimal and then divide by 100
             #  to get the weight is kilograms
             weight = int(data[3:5].hex(), 16) / 100
             print('weight is {} kg'.format(weight))
