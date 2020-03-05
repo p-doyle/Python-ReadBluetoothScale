@@ -4,6 +4,7 @@ import time
 import threading
 
 
+# thread to read weight from the scale
 class ReadWeightThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -24,6 +25,7 @@ class ReadWeightThread(threading.Thread):
         except Exception as e:
             print(e)
 
+    # connect to the scale and return the weight once the measurement is completed
     def read_scale(self):
 
         # connect to the scale
@@ -61,12 +63,15 @@ class ReadWeightThread(threading.Thread):
         return delegate.weight
 
 
+# delegate class used with bluepy
+# combines the scan and notification delegates into a single class
 class BLEDelegate(DefaultDelegate):
     def __init__(self):
         DefaultDelegate.__init__(self)
         self.weight = None
         self.measurement_done = False
 
+    # function that will be called when new devices are discovered
     def handleDiscovery(self, dev, is_new_dev, is_new_data):
 
         # if the newly discovered device is the scale
@@ -86,13 +91,14 @@ class BLEDelegate(DefaultDelegate):
                 read_weight_thread.setDaemon(True)
                 read_weight_thread.start()
 
+    # function that will be called when notifications are received
     def handleNotification(self, handle, data):
 
         # the weight notification starts with \x10
         if data[0] == 16:
 
             # convert the 4th and 5th bytes to decimal and then divide by 100
-            #  to get the weight is kilograms
+            #  to get the weight in kilograms
             weight = int(data[3:5].hex(), 16) / 100
             print('weight is {} kg'.format(weight))
 
