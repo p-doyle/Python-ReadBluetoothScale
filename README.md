@@ -15,7 +15,7 @@ terminology wrong please forgive me.
 # Requirements
 Tested on a Raspberry Pi 4 with Python3.7.  To install the required libs do: 
 <br/>`sudo apt-get install libbluetooth-dev libglib2.0-dev libboost-python-dev libboost-thread-dev pi-bluetooth bluetooth bluez`
-<br/>`sudo pip3 install pybluez gattlib`
+<br/>`sudo pip3 install bluepy gattlib`
 
 # Instructions
 The only change that should be required is to set the SCALE_ADDRESS variable in the script to the mac address 
