@@ -1,4 +1,4 @@
-from bluepy.btle import Scanner, DefaultDelegate, Peripheral
+from bluepy.btle import Scanner, DefaultDelegate, Peripheral, BTLEManagementError, BTLEDisconnectError
 import struct
 import time
 import threading
@@ -8,7 +8,7 @@ import threading
 class ReadWeightThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
-        self.name = 'Read Weight Thread'
+        self.name = READ_THREAD_NAME
 
     def run(self):
         try:
@@ -61,6 +61,12 @@ class ReadWeightThread(threading.Thread):
         p.disconnect()
 
         return delegate.weight
+
+
+def is_thread_active(thread_name):
+    for thread in threading.enumerate():
+        if thread_name == thread.name:
+            return True
 
 
 # delegate class used with bluepy
@@ -128,23 +134,31 @@ BEGIN_MEASUREMENT_VALUE = struct.pack('<BBBBBBBB', 0x20, 0x08, 0x15, 0xda, 0xb9,
 
 # the scale will still be discoverable and connectable for a short time after the display turns off
 # to prevent repeated connections, set a cooldown between measurements
-MEASUREMENT_COOLDOWN = 300
+MEASUREMENT_COOLDOWN = 900
+
+READ_THREAD_NAME = 'Read Weight Thread'
 
 # global var to track when we last took a measurement
 last_measurement = None
 
 while True:
     try:
-        # cannot use scanner.scan() here because it calls scanner.stop() when completed
-        #  and will throw an exception due to the bluepyhelper disconnecting when calling
-        #  Peripheral.disconnect()
         scanner = Scanner().withDelegate(BLEDelegate())
-        scanner.clear()
-        scanner.start(passive=True)
 
-        # set the timeout to the MEASUREMENT_COOLDOWN so the scale will only be discovered
-        #  at most once each loop
-        scanner.process(MEASUREMENT_COOLDOWN)
+        # make sure the read thread isn't active before starting another scan
+        if not is_thread_active(READ_THREAD_NAME):
+            scanner.scan(MEASUREMENT_COOLDOWN, passive=True)
+        else:
+            print('read thread active, not starting new scan, sleeping for 10 seconds')
+            time.sleep(10)
+
+    except BTLEDisconnectError as e:
+        print('device disconnected? {}'.format(e))
+        time.sleep(1)
+
+    except BTLEManagementError as e:
+        print('something wrong with bluetooth device? {}'.format(e))
+        time.sleep(1)
 
     except KeyboardInterrupt:
         break
