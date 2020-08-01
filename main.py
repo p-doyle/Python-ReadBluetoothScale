@@ -86,10 +86,9 @@ class BLEDelegate(DefaultDelegate):
 
             # make sure the read weight thread isn't already running
             # the MEASUREMENT_COOLDOWN should prevent this from happening but just to be sure...
-            for _thread in threading.enumerate():
-                if _thread.name == 'Read Weight Thread':
-                    print('thread already started!')
-                    return
+            if is_thread_active(READ_THREAD_NAME):
+                print('thread already started!')
+                return
 
             if not last_measurement or time.time() - last_measurement > MEASUREMENT_COOLDOWN:
 
